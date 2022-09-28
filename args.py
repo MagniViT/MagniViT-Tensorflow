@@ -50,7 +50,7 @@ def parse_args():
                         default=1, type=int)
     parser.add_argument('--feature_path', dest='feature_path',
                         help='directory where the images are stored',
-                        default="/run/user/1001/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI/DYNCESYS/OlgaF/camelyon_data/camelyon_features/", type=str)
+                        default="/run/user/1001/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI/DYNCESYS/OlgaF/camelyon_data/camelyon_features/tumor_vs_normal_resnet_features/", type=str)
     parser.add_argument('--experiment_name', dest='experiment_name',
                         help='the name of the experiment needed for the logs',
                         default="test", type=str)

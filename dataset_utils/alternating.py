@@ -38,7 +38,7 @@ class Alternating_task_generator(tf.keras.utils.Sequence):
 
         list_IDs_temp = [self.filenames[k] for k in indices]
 
-        X20,f, y = self.__data_generation(self.feature_path_256,list_IDs_temp)
+        X20, y = self.__data_generation(self.feature_path_256,list_IDs_temp)
         # try:
         #     X10, y = self.__data_generation(self.feature_path_10, list_IDs_temp)
         #     try:
@@ -47,7 +47,7 @@ class Alternating_task_generator(tf.keras.utils.Sequence):
         #     except:
         #         return (X20, X10), np.asarray(y, np.float32)
         # except:
-        return [(X20,f)],tf.repeat(np.asarray(y, np.float32),1)
+        return [(X20)],tf.repeat(np.asarray(y, np.float32),1)
 
     def __Get_exploration_order(self, data, shuffle):
         "shuffles the elements of the trainset"
@@ -80,7 +80,7 @@ class Alternating_task_generator(tf.keras.utils.Sequence):
                     wsi_name=os.path.join(path,filenames[i])
 
                     features = hdf5_file['features'][:]
-                    neighbor_indices = hdf5_file['indices'][:]
+                    #neighbor_indices = hdf5_file['indices'][:]
 
                     references = pd.read_csv(self.csv_file)
 
@@ -97,7 +97,7 @@ class Alternating_task_generator(tf.keras.utils.Sequence):
             #     adjacency_matrix = self.get_affinity(neighbor_indices[:, :k + 1])
             #     matrices.append(adjacency_matrix)
 
-            return features, neighbor_indices, bag_label
+            return features, bag_label
         except:
             return None
 

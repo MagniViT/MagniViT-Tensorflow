@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import os
 from flushed_print import print
-from sklearn.model_selection import train_test_split
+from DTFT_MIL_train import MultiNet
 
 if __name__ == "__main__":
 
