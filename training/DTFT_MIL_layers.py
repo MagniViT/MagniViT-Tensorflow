@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
-from tensorflow.keras.layers import  Dense,Dropout,ReLU
+from tensorflow.keras.layers import Dense, Dropout, ReLU
+
 
 class MILAttentionLayer(Layer):
     """Implementation of the attention-based Deep MIL layer.
@@ -15,12 +16,12 @@ class MILAttentionLayer(Layer):
     """
 
     def __init__(
-            self,
-            weight_params_dim,
-            kernel_initializer="glorot_uniform",
-            kernel_regularizer=None,
-            use_gated=False,
-            **kwargs,
+        self,
+        weight_params_dim,
+        kernel_initializer="glorot_uniform",
+        kernel_regularizer=None,
+        use_gated=False,
+        **kwargs,
     ):
 
         super().__init__(**kwargs)
@@ -105,7 +106,7 @@ class MILAttentionLayer(Layer):
 class Classifier_1fc(Layer):
     def __init__(self, n_classes, droprate=0.0):
         super(Classifier_1fc, self).__init__()
-        self.fc = Dense( n_classes)
+        self.fc = Dense(n_classes)
         self.droprate = droprate
         if self.droprate != 0.0:
             self.dropout = Dropout(rate=self.droprate)
@@ -118,19 +119,22 @@ class Classifier_1fc(Layer):
 
         return x
 
+
 class residual_block(Layer):
     def __init__(self, nChn=512):
         super(residual_block, self).__init__()
         self.block = tf.keras.Sequential(
-                Dense( nChn, use_bias=False),
-                ReLU(),
-                Dense( nChn, use_bias=False),
-                ReLU(),
-            )
+            Dense(nChn, use_bias=False),
+            ReLU(),
+            Dense(nChn, use_bias=False),
+            ReLU(),
+        )
+
     def forward(self, x):
         tt = self.block(x)
         x = x + tt
         return x
+
 
 class DimReduction(Layer):
     def __init__(self, m_dim=512, numLayer_Res=0):
@@ -152,8 +156,8 @@ class DimReduction(Layer):
             x = self.resBlocks(x)
         return x
 
-class Attention_with_Classifier(Layer):
 
+class Attention_with_Classifier(Layer):
     def __init__(self, L, num_cls=2, droprate=0):
         super(Attention_with_Classifier, self).__init__()
         self.attention = MILAttentionLayer(weight_params_dim=L)
@@ -161,6 +165,6 @@ class Attention_with_Classifier(Layer):
 
     def call(self, x):  ## x: N x L
         AA = self.attention(x)  ## K x N
-        afeat =  tf.matmul(AA, x)  ## K x L
+        afeat = tf.matmul(AA, x)  ## K x L
         pred = self.classifier(afeat)  ## K x num_cls
         return pred
