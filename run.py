@@ -1,11 +1,9 @@
 from args import parse_args, set_seed
 import numpy as np
-from training.network import MultiNet
-import time
 import pandas as pd
 import os
 from flushed_print import print
-from DTFT_MIL_train import MultiNet
+from training.DTFT_train import MultiNet
 
 if __name__ == "__main__":
 
@@ -19,6 +17,7 @@ if __name__ == "__main__":
 
 
     acc = np.zeros((args.run, args.n_folds), dtype=float)
+    f_score = np.zeros((args.run, args.n_folds), dtype=float)
     precision = np.zeros((args.run, args.n_folds), dtype=float)
     recall = np.zeros((args.run, args.n_folds), dtype=float)
     auc = np.zeros((args.run, args.n_folds), dtype=float)
@@ -43,25 +42,26 @@ if __name__ == "__main__":
 
             test_bags = references.apply(lambda row: func_val(row.test), axis=1).dropna().values.tolist()
 
-            train_net = MultiNet(args)
+            train_net = MultiNet(args, training_flag=True)
 
-            t1 = time.time()
+            train_net.train(train_bags, val_bags, fold_id)
 
-            train_net.train(train_bags, val_bags, args, fold_id)
+            test_net = MultiNet(args, training_flag=False)
 
-            test_net = MultiNet(args)
-
-            acc[irun][int(fold_id)], auc[irun][int(fold_id)], precision[irun][int(fold_id)], recall[irun][int(fold_id)] = \
-                test_net.predict(test_bags,args, fold_id,test_model=test_net.model)
+            acc[irun][int(fold_id)], auc[irun][int(fold_id)], precision[irun][int(fold_id)], recall[irun][int(fold_id)] ,f_score[irun][int(fold_id)]= \
+                test_net.predict(test_bags, fold_id,tier_1=test_net.model_1,tier_2=test_net.model_2 )
 
 
     print('mean accuracy = ', np.mean(acc))
     print('std = ', np.std(acc))
     print(' mean precision = ', np.mean(precision))
+    print('std = ', np.std(precision))
     print('mean recall = ', np.mean(recall))
     print('std = ', np.std(recall))
     print(' mean auc = ', np.mean(auc))
     print('std = ', np.std(auc))
+    print(' mean f_score = ', np.mean(f_score))
+    print('std = ', np.std(f_score))
 
 
 

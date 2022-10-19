@@ -15,9 +15,6 @@ from collections import deque
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import OneHotEncoder
 from training.custom_callbacks import CustomReduceLRoP
-from training.neighboring_custom_layers import CHARM
-import tensorflow_probability as tfp
-tfd = tfp.distributions
 
 class MultiNet:
     def __init__(self, args):
@@ -44,17 +41,16 @@ class MultiNet:
         self.save_dir=args.save_dir
 
 
+
+
         self.inputs = {
-            'bag': Input(self.input_shape),
-            'indices': Input(shape=(11,), name='indices')
+            'bag': Input(self.input_shape)
         }
 
-        #attn_output = TransMIL(n_classes=2, seed=self.seed)(self.inputs['bag'])
+        attn_output = TransMIL(n_classes=2, seed=self.seed)(self.inputs['bag'])
 
-        out = CHARM(n_classes=2, k=[2,4,8])([self.inputs['bag'], self.inputs["indices"]])
 
-        #self.net = Model(inputs=self.inputs['bag'], outputs=[attn_output])
-        self.net = Model(inputs=[self.inputs['bag'], self.inputs["indices"]], outputs=[out])
+        self.net = Model(inputs=self.inputs['bag'], outputs=[attn_output])
 
     @property
     def model(self):
@@ -186,20 +182,21 @@ class MultiNet:
                     for step, (x_batch_train,y_batch_train) in enumerate(train_gen):
                         step_loss=[]
                         step_logits=[]
-
-                        for i, features in enumerate(x_batch_train):
-                            if self.strategy == 'Accumulating gradients':
-                                loss,logits=accumulated_train_step(features,  y_batch_train)
-                                step_logits.append(logits.numpy())
-                                step_loss.append(loss.numpy())
-                            elif self.strategy == 'Alternating':
-                                train_step(features,  y_batch_train)
-
-                        if self.strategy == 'Accumulating gradients':
-                            logs["train_loss"]=np.mean(step_loss)
-                            logs["logits"]=np.mean(step_logits,0)
-                            train_loss_tracker.update_state(logs["train_loss"])
-                            train_acc_metric.update_state(y_batch_train, tf.argmax(logs["logits"], 1))
+                        train_step(x_batch_train, y_batch_train)
+                        # for i, features in enumerate(x_batch_train):
+                        #
+                        #     if self.strategy == 'Accumulating gradients':
+                        #         loss,logits=accumulated_train_step(features,  y_batch_train)
+                        #         step_logits.append(logits.numpy())
+                        #         step_loss.append(loss.numpy())
+                        #     elif self.strategy == 'Alternating':
+                        #         train_step(features,  y_batch_train)
+                        #
+                        # if self.strategy == 'Accumulating gradients':
+                        #     logs["train_loss"]=np.mean(step_loss)
+                        #     logs["logits"]=np.mean(step_logits,0)
+                        #     train_loss_tracker.update_state(logs["train_loss"])
+                        #     train_acc_metric.update_state(y_batch_train, tf.argmax(logs["logits"], 1))
 
                         if (step+1) % 100 == 0:
                                 print("Training loss (for one batch) at step {}: {}".format(step, train_loss_tracker.result()))
